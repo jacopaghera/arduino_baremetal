@@ -22,17 +22,44 @@ int main(void) {
   return 0;
 }
 
-void USART_Init(unsigned int ubrr) {
+void USART_Init(uint16_t baudRate, char parity, uint8_t dataBits, uint8_t stopBits) {
+  uint16_t ubrr = (FOSC/16UL/baudRate - 1);
   UBRR0H = (unsigned char) (ubrr>>8);
   UBRR0L = (unsigned char) ubrr;
   //abilita sia la trasmissione sia il ricevimento
 
   UCSR0B = (1<<RXEN0) | (1<<TXEN0);
   //settaggio del formato: 8data, no parity, 1 stop bit, vedi datasheet
-  UCSR0C = (3<<UCSZ00);
+  switch(parity) {
+    case 'o':
+      UCSR0C |= ((1 << UPM00) | (1 << UPM01));
+      break;
+    case 'e':
+      UCSR0C |= (1 << UPM01);
+      UCSR0C &= ~(1 << UPM00);
+      break;
+    case 'n':
+      UCSR0C &= ~(1 << UPM01);
+      UCSR0C &= ~(1 << UPM00);
+      break;
+    default:
+      UCSR0C &= ~(1 << UPM01);
+      UCSR0C &= ~(1 << UPM00);
+      break;
+  }
+
+  switch(dataBits){
+
+  }
+
+  switch(stopBits){
+    
+  }
+
 }
 
 void USART_Transmit(uint8_t DataByte){
   while((UCSR0A & (1 << UDRE0)) == 0) {}; //aspetta finche' UDR e' pronto
   UDR0 = DataByte;
 }
+
